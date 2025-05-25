@@ -57,4 +57,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("com.robotemi:sdk:1.135.1") // temiのSDKを追加
+    implementation("com.squareup.okhttp3:mockwebserver:4.12.0") // OkhttpのMockWebServerを追加
+
 }

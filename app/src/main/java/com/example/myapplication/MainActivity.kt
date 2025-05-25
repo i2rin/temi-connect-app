@@ -12,21 +12,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.robotemi.sdk.Robot
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var TemiWebSocketClient: TemiWebSocketClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            MyApplicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+
+        // 画像認識システムに接続する
+        webSocketClient = TemiWebSocketClient("hogehoge") // ここをAIシステムのIPに置き換える
+        webSocketClient.connect()
+
+        // ロボットを認証
+        Robot.getInstance().addOnRobotReadyListener {
+            Robot.getInstance().speak("Temi proctor system initialized. ") 
         }
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        webSocketClient.disconnect()
     }
 }
 
