@@ -13,23 +13,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.robotemi.sdk.Robot
+import com.robotemi.sdk.TtsRequest
+
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var TemiWebSocketClient: TemiWebSocketClient
+    private lateinit var webSocketClient: TemiWebSocketClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // 画像認識システムに接続する
-        webSocketClient = TemiWebSocketClient("hogehoge") // ここをAIシステムのIPに置き換える
+        webSocketClient = TemiWebSocketClient("ws://10.0.2.2:8765") // ここをAIシステムのIPに置き換える
         webSocketClient.connect()
 
         // ロボットを認証
-        Robot.getInstance().addOnRobotReadyListener {
-            Robot.getInstance().speak("Temi proctor system initialized. ") 
-        }
+        Robot.getInstance().addOnRobotReadyListener(object : com.robotemi.sdk.listeners.OnRobotReadyListener {
+            override fun onRobotReady(isReady: Boolean) {
+                if (isReady) {
+                    Robot.getInstance().speak(
+                        TtsRequest.create("Temi proctor system initialized.", false)
+                    )
+                }
+            }
+        })
 
+        // UIを表示
+        setContent {
+            MyApplicationTheme {
+                Greeting("Temi")
+            }
+        }
     }
 
     override fun onDestroy() {

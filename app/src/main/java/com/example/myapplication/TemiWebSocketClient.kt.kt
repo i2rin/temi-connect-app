@@ -1,51 +1,32 @@
 package com.example.myapplication
 
 import android.util.Log
-import com.robotemi.sdk.Robot
-import okhttp3.*
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.ServerHandshake
+import java.net.URI
 
-class `TemiWebSocketClient.kt`(private val serverUrl: String) {
+class TemiWebSocketClient(serverUri: String) : WebSocketClient(URI(serverUri)) {
 
-    private val client = OkHttpClient()
-    private lateinit var webSocket: WebSocket
-
-    fun connect() {
-        val request = Request.Builder()
-            .url(serverUrl)
-            .build()
-
-        webSocket = client.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                Log.d("TemiWebSocket", "WebSocket Connected")
-            }
-
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                Log.d("TemiWebSocket", "Message received: $text")
-                handleCommand(text)
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                Log.e("TemiWebSocket", "WebSocket error: ${t.message}")
-            }
-
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                Log.d("TemiWebSocket", "WebSocket closing: $reason")
-                webSocket.close(1000, null)
-            }
-        })
+    override fun onOpen(handshakedata: ServerHandshake?) {
+        Log.d("WebSocket", "Connection opened")
     }
 
-    private fun handleCommand(command: String) {
-        val robot = Robot.getInstance()
-        when (command.trim()) {
-            "WARNING" -> robot.speak("Please stay focused on your exam.")
-            "FOCUS_USER" -> robot.speak("I am watching you more closely.")
-            "MOVE_CLOSER" -> robot.turnBy(30) // or robot.goTo("position")
-            else -> robot.speak("Unknown command: $command")
-        }
+    override fun onMessage(message: String?) {
+        Log.d("WebSocket", "Message received: $message")
+    }
+
+    override fun onClose(code: Int, reason: String?, remote: Boolean) {
+        Log.d("WebSocket", "Connection closed: $reason")
+    }
+
+    override fun onError(ex: Exception?) {
+        Log.e("WebSocket", "Error occurred", ex)
     }
 
     fun disconnect() {
-        webSocket.close(1000, "App closing")
+        if (this.isOpen) {
+            this.close(1000, "Client disconnecting")
+            Log.d("WebSocket", "Disconnecting WebSocket client")
+        }
     }
 }
